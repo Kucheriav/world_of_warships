@@ -74,11 +74,9 @@ class Game:
                     name = self.get_player_name()
                     self.player2 = Player(name, board, ships, self.signs)
                 elif answ == '2':
-                    print('Hello, player1! Get ready to input your filename')
-                    saved_game = self.load_game()
-                    self.player1 = Player(*saved_game[0])
-                    self.player2 = Player(*saved_game[1])
-                    self.round = saved_game[2]
+                    print('This option is temporary unavailable!')
+                    continue
+                    # something
                 elif answ == '3':
                     return self.greeting()
                 else:
