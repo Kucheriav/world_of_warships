@@ -1,0 +1,4 @@
+empty _
+miss .
+hit X
+ship 0

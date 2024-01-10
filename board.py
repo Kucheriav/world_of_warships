@@ -1,45 +1,15 @@
-class MapEvents(Exception):
-    pass
+from ship import Ship
+from events import *
 
-
-class StartOutOfBound(MapEvents):
-    def __init__(self):
-        super().__init__('Start of your ship is out of bound!')
-
-
-class LengthOutOfBound(MapEvents):
-    def __init__(self):
-        super().__init__('End of your ship is out of bound!')
-
-
-class ShipCollision(MapEvents):
-    def __init__(self, ):
-        super().__init__('Your ship collides with existing one!')
-
-
-class ShootOutOfBound(MapEvents):
-    def __init__(self, ):
-        super().__init__('You shoot out of bound!')
-
-
-class Ship:
-    def __init__(self, x, y, dir, size):
-        self.coords = list()
-        self.dir = dir
-        if dir == 'h':
-            for i in range(size):
-                self.coords.append([y, x + i])
-        else:
-            for i in range(size):
-                self.coords.append([y + i, x])
-        self.hitbox = [1 for i in range(size)]
 
 
 class Board:
-    def __init__(self, size, empty='_'):
+    def __init__(self, size, signs_dict):
         self.size = size
-        if empty != '_':
-            self.empty = empty
+        self.empty = signs_dict['empty']
+        self.hit = signs_dict['hit']
+        self.ship = signs_dict['ship']
+        self.miss = signs_dict['miss']
         self.map = [[self.empty for i in range(self.size + 2)] for j in range(self.size + 2)]
         # обнулится после постановки кораблей
         self.ships_number_dict = self.calculate_ship_number()
@@ -103,11 +73,11 @@ class Board:
             raise LengthOutOfBound
         if dir == 'h':
             for i in range(size):
-                if self.map[y][x + i] == '0':
+                if self.map[y][x + i] != self.empty:
                     raise ShipCollision
         else:
             for i in range(size):
-                if self.map[y + i][x] == '0':
+                if self.map[y + i][x] != self.empty:
                     raise ShipCollision
         return True
 
@@ -163,5 +133,5 @@ class Board:
     def get_ships_number(self):
         return len(self.ships)
 
-    def get_from_file(self):
-        pass
+    def get_from_file(self, matrix):
+        self.map = matrix
