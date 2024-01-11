@@ -23,6 +23,10 @@ class Player(Entity):
         self.ship_list = ship_list
 
 
+
+
+
+
     def make_move(self):
         print('Input coordinates x y')
         try:
@@ -53,7 +57,7 @@ class Bot(Entity):
 
     def load_board(self, name, board, ships):
         self.name = name
-        self.own_board.get_from_file(board)
+        self.own_board.set_from_matrix(board)
         self.ship_list = ships
 
 
