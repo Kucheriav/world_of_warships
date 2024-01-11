@@ -62,16 +62,16 @@ class Game:
             answ = input()
             while True:
                 if answ == '1':
-                    print('Hello, player1! Get ready to input your ship coordinates')
-                    board, ships = self.input_loop()
-                    print('Input your name')
+                    print('Player1, input your name')
                     name = self.get_player_name()
+                    print(f'{name}, get ready to input your ship coordinates')
+                    board, ships = self.input_loop()
                     self.player1 = Player(name, board, ships, self.signs)
                     print("That's all! Now it's player2 turn!")
-                    print('Hello, player2! Get ready to input your ship coordinates')
-                    board, ships = self.input_loop()
-                    print('Input your name')
+                    print('Player2, input your name')
                     name = self.get_player_name()
+                    print(f'{name}, get ready to input your ship coordinates')
+                    board, ships = self.input_loop()
                     self.player2 = Player(name, board, ships, self.signs)
                 elif answ == '2':
                     print('This option is temporary unavailable!')
@@ -161,7 +161,6 @@ class Game:
         with open(f'{filename}.pickle', 'rb') as f:
             data = pickle.load(f)
         return data
-
 
     def save_game(self, filename):
         with open(f'{filename}.pickle', 'wb') as f:

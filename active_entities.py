@@ -58,4 +58,9 @@ class Bot(Entity):
 
 
     def make_move(self):
-        pass
+        x = random.randint(1, self.own_board.size)
+        y = random.randint(1, self.own_board.size)
+        if self.enemy_board.get_cell(x,y) != self.enemy_board.empty:
+            return self.make_move()
+        else:
+            self.enemy_board.shoot(x,y)

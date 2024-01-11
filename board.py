@@ -133,5 +133,8 @@ class Board:
     def get_ships_number(self):
         return len(self.ships)
 
+    def get_cell(self, x, y):
+        return self.map[y][x]
+
     def get_from_file(self, matrix):
         self.map = matrix
