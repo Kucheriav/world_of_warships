@@ -10,6 +10,11 @@ class CorruptedSettingsFileError(FileEvents):
     pass
 
 
+class FileImportAbortionError(FileEvents):
+    def __init__(self):
+        super().__init__('Error while importing from file')
+
+
 class MapEvents(Exception):
     pass
 
@@ -18,23 +23,23 @@ class PlacingShipEvents(MapEvents):
     pass
 
 
-class StartOutOfBound(PlacingShipEvents):
+class StartOutOfBoundError(PlacingShipEvents):
     def __init__(self):
         super().__init__('Start of your ship is out of bound!')
 
 
-class LengthOutOfBound(PlacingShipEvents):
+class LengthOutOfBoundError(PlacingShipEvents):
     def __init__(self):
         super().__init__('End of your ship is out of bound!')
 
 
-class ShipCollision(PlacingShipEvents):
-    def __init__(self, ):
+class ShipCollisionError(PlacingShipEvents):
+    def __init__(self):
         super().__init__('Your ship collides with existing one!')
 
 
-class ShootOutOfBound(PlacingShipEvents):
-    def __init__(self, ):
+class ShootOutOfBoundError(PlacingShipEvents):
+    def __init__(self):
         super().__init__('You shoot out of bound!')
 
 

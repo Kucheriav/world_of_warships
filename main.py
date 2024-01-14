@@ -1,10 +1,10 @@
-import whichcraft
 from os import listdir
 from ship import Ship
 from board import Board
 from active_entities import Player, Bot
-from events import NoSuchFileError, CorruptedSettingsFileError
+from events import NoSuchFileError, CorruptedSettingsFileError, FileImportAbortionError
 import pickle
+
 
 class Game:
     def __init__(self):
@@ -23,8 +23,9 @@ class Game:
             'четырехпалубный': 1 * coef,
             'трехпалубный': 2 * coef,
             'двухпалубный': 3 * coef,
+            'однопалубный': 0 * coef
         }
-        ship_dict['однопалубный'] = ship_cells - sum(ship_dict.values())
+        ship_dict['однопалубный'] = ship_cells - sum([(len(ship_dict) - i) * x for i, x in enumerate(ship_dict.values())])
         return ship_dict
 
     def load_settings(self, filename):
@@ -81,13 +82,13 @@ class Game:
                     print('Player1, input your name')
                     name = self.get_player_name()
                     print(f'{name}, get ready to input your ship coordinates')
-                    board, ships = self.input_loop()
+                    board, ships = self.prepare_board()
                     self.player1 = Player(name, board, ships, self.signs)
                     print("That's all! Now it's player2 turn!")
                     print('Player2, input your name')
                     name = self.get_player_name()
                     print(f'{name}, get ready to input your ship coordinates')
-                    board, ships = self.input_loop()
+                    board, ships = self.prepare_board()
                     self.player2 = Player(name, board, ships, self.signs)
                 elif answ == '2':
                     print('This option is temporary unavailable!')
@@ -112,18 +113,21 @@ class Game:
                     self.player1 = Player(name, board, ships, self.signs)
                     self.player2 = Bot(self.board_size, self.signs)
                     self.player2.init_board()
-        ##############initialize bot board #####################
+                    break
                 elif answ == '2':
-                    print('This option is temporary unavailable!')
-                    answ = input()
-                    continue
-                    # print('Hello, player1! Get ready to input your filename')
-                    # print(f'This file should contain matrix {self.board_size}x{self.board_size}')
-                    # print('Use this signs:')
-                    # saved_game = self.load_file()
-                    # self.player1 = Player(*saved_game[0])
-                    # self.player2 = Player(*saved_game[1])
-                    # self.round = saved_game[2]
+                    try:
+                        print('Hello, player1! Get ready to input your filename')
+                        board, ships = self._load_coords_from_file()
+                    except Exception as ex:
+                        print(ex)
+                        return self.greeting()
+                    else:
+                        print('Input your name')
+                        name = self.get_player_name()
+                        self.player1 = Player(name, board, ships, self.signs)
+                        self.player2 = Bot(self.board_size, self.signs)
+                        self.player2.init_board()
+                        break
                 elif answ == '3':
                     return self.greeting()
                 else:
@@ -157,17 +161,30 @@ class Game:
                 return answ_copy
 
 
-    # def load_file(self):
-    #     print('Input file name')
-    #     filename = input()
-    #     while filename not in listdir():
-    #         print('No such filename!')
-    #         filename = input()
-    #     file = open(filename)
-    #     sells = [x.split() for x in file.readlines()]
-    #     self.player_board = Board(size=len(sells))
-    #     self.player_board.map = sells
-    #     return 'result'
+    def _load_coords_from_file(self):
+        print('WARNING: there will be no content checks. Be extremely accurate.')
+        print('File format: plain text, one line - one ship')
+        print('Ship description prompt: size x y direction (h/v)')
+        print('Input file name')
+        filename = input()
+        while filename not in listdir():
+            print('No such filename!')
+            filename = input()
+        with open(filename) as file:
+            this_board = Board(self.board_size, self.signs)
+            this_ships = list()
+            for line in file:
+                size, x, y, dir = line.split()
+                this_board.add_ship(int(x), int(y), dir, int(size))
+                this_ships.append(Ship(int(x), int(y), dir, int(size)))
+            print('Export complete!')
+            self.print_board(this_board)
+            print('Is this correct? y/n')
+            a = input()
+            if a.lower() == 'y':
+                return this_board, this_ships
+            else:
+                raise FileImportAbortionError
 
 
     def load_game(self):
@@ -186,28 +203,28 @@ class Game:
             pickle.dump(data, f)
 
     def prepare_board(self):
-        # нужно создавать доску, впечатывать туда корабли, всместе с аурой
+        # нужно создавать доску, впечатывать туда корабли, вместе с аурой
+        # аура нужна.т.к. есть проверка запрещающая ставить в непустые клетки
+        # таким образом получаем положенный по правилам зазор
         # потом обнулять через replace
         this_board = Board(self.board_size, self.signs)
         this_ships = list()
-        decks = list(self.ships_set_dict.keys())
-        for ship_type in self.ships_set_dict:
-            i = 0
-            while i < self.ships_set_dict[ship_type]:
+        for i, ship_type in enumerate(self.ships_set_dict):
+            counter = 0
+            cur_ship_size = len(self.ships_set_dict) - i
+            while counter < self.ships_set_dict[ship_type]:
+                print(f'Need to place {self.ships_set_dict[ship_type] - counter} {ship_type}')
                 try:
                     self.print_board(this_board)
-                    print(f'Choose coordinates for {ship_type}')
-                    x, y = map(int, input().split())
-                    print('Input direction h / v')
-                    dir = input()
-                    size = len(decks) - decks.index(ship_type)
-                    this_board.add_ship(x, y, dir, size)
+                    print(f'Choose coordinates for {ship_type} and direction(h/v)')
+                    x, y, dir = input().split()
+                    this_board.add_ship(int(x), int(y), dir, cur_ship_size)
                 except Exception as ex:
                     print(repr(ex))
                 else:
-                    this_ships.append(Ship(x, y, dir, size))
+                    this_ships.append(Ship(int(x), int(y), dir, cur_ship_size))
                     this_board.draw_aura(this_ships[-1])
-                    i += 1
+                    counter += 1
         ##избавляемся от ауры
         m = this_board.get_map()
         for y in range(len(m)):
@@ -216,6 +233,7 @@ class Game:
             m[y] = list(s)
         this_board.set_from_matrix(m)
         self.print_board(this_board)
+        return this_board, this_ships
 
     def print_board(self, left: Board, right: Board = None):
         space = ' ' * len(str(self.board_size))
@@ -234,21 +252,13 @@ class Game:
             print()
 
 
-    # def save_to_file(self, filename):
-    #     file = open(filename, 'w')
-    #     for line in self.map:
-    #         file.write(line)
-    #         file.write('\n')
-    #     file.close()
+    def main_loop(self):
+        while True:
 
-
-
-    # def main_loop(self):
-    #     while True:
-    #         self.print_board()
-    #         print('Shoot!')
-    #         print('input x y')
-    #         x, y = self.input_loop()
+            self.print_board()
+            print('Shoot!')
+            print('input x y')
+            x, y = self.input_loop()
 
 
 if __name__ == '__main__':
@@ -261,3 +271,4 @@ if __name__ == '__main__':
         print('Settings file is corrupted!')
     else:
         game.greeting()
+        game.main_loop()

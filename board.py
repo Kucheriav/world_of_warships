@@ -32,19 +32,19 @@ class Board:
 
     def check_new_ship(self, x, y, dir, size):
         if x < 1 or y < 1 or x > self.size or y > self.size:
-            raise StartOutOfBound()
-        if dir == 'h' and (x + size) > self.size:
-            raise LengthOutOfBound
-        if dir == 'v' and (y + size) > self.size:
-            raise LengthOutOfBound
+            raise StartOutOfBoundError()
+        if dir == 'h' and (x + size - 1) > self.size:
+            raise LengthOutOfBoundError
+        if dir == 'v' and (y + size - 1) > self.size:
+            raise LengthOutOfBoundError
         if dir == 'h':
             for i in range(size):
                 if self.map[y][x + i] != self.empty:
-                    raise ShipCollision
+                    raise ShipCollisionError
         else:
             for i in range(size):
                 if self.map[y + i][x] != self.empty:
-                    raise ShipCollision
+                    raise ShipCollisionError
         return True
 
 
